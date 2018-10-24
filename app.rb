@@ -1,32 +1,24 @@
 class App
-
-  AVAILABLE_FORMAT = {year: '%Y', month: '%m', day: '%d', hour: '%H', minute: '%M', second: '%S'}
+  require_relative 'time_formatter'
 
   def call(env)
-    url = env['PATH_INFO']
-    query_string = env['QUERY_STRING'].split('=')[1]
+    request = Rack::Request.new(env)
 
-    if query_string
-      query_format = {}
-      query_string.split('%2C').map(&:to_sym).map {|k| query_format[k] = AVAILABLE_FORMAT[k]}
-
-      unknown_format = query_format.keys - AVAILABLE_FORMAT.keys
-
-      if url != '/time'
-          @body = ["Page not found: #{url}. Use: /time"]
-          @status = 404
-      else if unknown_format.empty?
-          @body = [Time.now.strftime(query_format.values.join('-'))]
-          @status = 200
-        else
-          @body = ["Unknown time format [#{unknown_format.join(', ')}]", "Available time formats: #{AVAILABLE_FORMAT.keys.inspect}"]
-          @status = 400
-        end
-      end
-
+    unless request.params['format']
+      # отдаем ошибку - формат не передан
+      @body = ["Time format not found. Get time format like this: /time?format=year,month,day"]
+      @status = 400
     else
-          @body = ["Time format not found. Get time format like this: /time?format=year%2Cmonth%2Cday"]
-          @status = 400
+      formatter = TimeFormatter.new(request.params['format'].split(','))
+      if formatter.success?
+        # отдаем успшный ответ
+        @body = [Time.now.strftime(formatter.get_formats)]
+        @status = 200
+      else
+        # отдаем ошибку - неизвестный формат
+        @body = ["Unknown time format [#{formatter.get_formats}]. Available time formats: #{TimeFormatter::VALID_FORMATS.keys.inspect}"]
+        @status = 400
+      end
     end
 
     [status, headers, body]
