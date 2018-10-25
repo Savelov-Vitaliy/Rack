@@ -1,5 +1,5 @@
-require_relative 'middleware/url_filter'
+require_relative 'middleware/filter'
 require_relative 'app'
 
-use URLFilter
+use Filter
 run App.new

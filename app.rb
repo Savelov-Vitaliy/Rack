@@ -1,24 +1,19 @@
+require_relative 'time_formatter'
+
 class App
-  require_relative 'time_formatter'
 
   def call(env)
     request = Rack::Request.new(env)
+    formatter = TimeFormatter.new(request.params['format'])
 
-    unless request.params['format']
-      # отдаем ошибку - формат не передан
-      @body = ["Time format not found. Get time format like this: /time?format=year,month,day"]
-      @status = 400
+    if formatter.success?
+      # отдаем успешный ответ
+      @body = [formatter.formatted_time]
+      @status = 200
     else
-      formatter = TimeFormatter.new(request.params['format'].split(','))
-      if formatter.success?
-        # отдаем успшный ответ
-        @body = [Time.now.strftime(formatter.get_formats)]
-        @status = 200
-      else
-        # отдаем ошибку - неизвестный формат
-        @body = ["Unknown time format [#{formatter.get_formats}]. Available time formats: #{TimeFormatter::VALID_FORMATS.keys.inspect}"]
-        @status = 400
-      end
+      # отдаем ошибку - неизвестный формат
+      @body = ["Unknown time format [#{formatter.unknown_formats}]. Available time formats: #{formatter.valid_formats}"]
+      @status = 400
     end
 
     [status, headers, body]
