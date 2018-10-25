@@ -20,7 +20,7 @@ class TimeFormatter
   end
 
   def valid_formats
-    VALID_FORMATS.keys.inspect
+    VALID_FORMATS.keys
   end
 
 end

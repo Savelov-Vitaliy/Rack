@@ -1,5 +1,7 @@
 class Filter
 
+  attr_reader :status, :body
+
   VALID_URL = '/time'
 
   def initialize(app)
@@ -16,7 +18,7 @@ class Filter
       return [status, headers, body]
     end
 
-    if !request.params['format']
+    unless request.params['format']
       # отдаем ошибку - формат не передан
       @status = 400
       @body = ["Time format not found. Get time format like this: /time?format=year,month,day"]
@@ -26,16 +28,8 @@ class Filter
     @app.call(env)
   end
 
-  def status
-    @status
-  end
-
   def headers
     { 'Content-type' => 'text/plain' }
-  end
-
-  def body
-    @body
   end
 
 end

@@ -2,6 +2,8 @@ require_relative 'time_formatter'
 
 class App
 
+  attr_reader :status, :body
+
   def call(env)
     request = Rack::Request.new(env)
     formatter = TimeFormatter.new(request.params['format'])
@@ -21,16 +23,8 @@ class App
 
   private
 
-  def status
-    @status
-  end
-
   def headers
     { 'Content-type' => 'text/plain' }
-  end
-
-  def body
-    @body
   end
 
 end
